@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ruleset name="coding-standard">
-    <rule ref="PSR3"/>
+    <rule ref="PSR0"/>
 </ruleset>
