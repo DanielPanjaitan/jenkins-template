@@ -40,7 +40,7 @@ task phpcs (type : Exec, description : "Find Coding Standard Violations using PH
 task phpmd (type : Exec, description : "Perform project mess detection using PHPMD, and Creating a log file for the Continuous Integration Server"){
         ignoreExitValue true
         executable name
-                args sourceDir, "xml", "${homeDir}/phpmd.xml", "--reportfile", "${homeDir}/logs/phpmd.xml"
+                args sourceDir, "xml", "${homeDir}/phpmd.xml", "--reportfile", "${homeDir}/logs/pmd.xml"
 }
 task pdepend(type: Exec, description: 'Calculate software metrics using PHPDepend') {
         ignoreExitValue true
