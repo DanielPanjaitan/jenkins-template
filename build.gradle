@@ -1,0 +1,122 @@
+ext {
+        sourceDir = './app'
+        testDir = './tests'
+	homeDir = './build'
+        lockFile='./composer.lock'
+}
+
+task addLaravelCache(type : Exec, description : "Adding Laravel cache folder."){
+        ignoreExitValue true
+        executable 'mkdir'
+                args "-p", "./bootstrap/cache/"
+}
+task installYarn(type : Exec, description : "Installing Yarn package."){
+        ignoreExitValue true
+        executable 'npm'
+                args "install", "-g", "yarn"
+}
+
+task yarn(type : Exec, description : "Run Yarn package.", dependsOn: installYarn){
+        ignoreExitValue true
+        executable name
+}
+
+task prepare(type: Delete) {
+	delete "${homeDir}/api"
+        delete "${homeDir}/code-browser"
+        delete "${homeDir}/coverage"
+        delete "${homeDir}/logs"
+        delete "${homeDir}/pdepend"
+		doLast {
+				file("${homeDir}/api").mkdirs()
+                file("${homeDir}/code-browser").mkdirs()
+				file("${homeDir}/coverage").mkdirs()
+				file("${homeDir}/logs").mkdirs()
+				file("${homeDir}/pdepend").mkdirs()
+        }
+}
+
+task phpcb (type : Exec, description : "Create Code Browser."){
+        ignoreExitValue true
+        executable name
+                args "--log", "${homeDir}/logs", "--source", "${sourceDir}", "--output", "${homeDir}/code-browser"
+
+}
+task phpcpd (type : Exec, description : "Find duplicate code using PHPCPD and log result in XML format."){
+        ignoreExitValue true
+        executable name
+                args "--log-pmd", "${homeDir}/logs/pmd-cpd.xml", sourceDir, "--exclude", "Domain/Wallet/VirtualAccount/lib"
+
+}
+task phpcs (type : Exec, description : "Find Coding Standard Violations using PHP_CodeSniffer"){
+        ignoreExitValue true
+        executable name
+                args "--report=checkstyle", "--report-file=${homeDir}/logs/checkstyle.xml", "--ignore=${sourceDir}/Domain/Wallet/VirtualAccount/lib/*", "--standard=${homeDir}/phpcs.xml", sourceDir
+}
+task phpmd (type : Exec, description : "Perform project mess detection using PHPMD, and Creating a log file for the Continuous Integration Server"){
+        ignoreExitValue true
+        executable name
+                args sourceDir, "xml", "${homeDir}/phpmd.xml", "--exclude", "*/app/Domain/Wallet/VirtualAccount/lib/*", "--reportfile", "${homeDir}/logs/pmd.xml"
+}
+task pdepend(type: Exec, description: 'Calculate software metrics using PHPDepend') {
+        ignoreExitValue true
+        executable name
+                args "--jdepend-xml=${homeDir}/logs/jdepend.xml", "--jdepend-chart=${homeDir}/pdepend/dependencies.svg", "--overview-pyramid=${homeDir}/pdepend/overview-pyramid.svg", sourceDir
+}
+task phpdox (type : Exec, description : "Generating Docs enriched with pmd, checkstyle, phpcs,phpunit,phploc"){
+        ignoreExitValue true
+        executable name
+                args "-f", "${homeDir}/phpdox.xml"
+}
+task phploc(type: Exec, description: 'Measure project size using PHPLOC') {
+        ignoreExitValue true
+        executable name
+                args "--count-tests", "--log-csv", "${homeDir}/logs/phploc.csv", "--log-xml", "${homeDir}/logs/phploc.xml", sourceDir, testDir
+}
+task phpunit (type : Exec, description : "Run unit tests with PHPUnit"){
+         executable name
+                args "-c", "./phpunit.xml", "--coverage-html", "${homeDir}/coverage", "--coverage-clover", "${homeDir}/logs/clover.xml", "--coverage-crap4j", "${homeDir}/logs/crap4j.xml", "--log-junit", "${homeDir}/logs/junit.xml", "--debug"
+}
+task phpmetrics (type : Exec, description : "Run PHP Metrics "){
+        ignoreExitValue true
+         executable name
+                args "--report-html=build/phpmetrics.html", "${sourceDir}"
+}
+
+task composer_update (type : Exec, description : "Run composer update"){
+        ignoreExitValue true
+        executable 'composer'
+                args "update"
+}
+task composer_install (type : Exec, description : "Run composer install"){
+        ignoreExitValue true
+        executable 'composer'
+                args "install"
+}
+
+task composer_clean(type: Delete, description : "Clean composer.lock") {
+        delete lockFile
+}
+
+task lint (description : "Perform Syntax Check using Lint"){
+       ant.apply(executable:"php", failonerror: 'false') {
+                arg(value:"-l")
+                fileset(dir: sourceDir) {
+                        include(name: "**/*.php")
+                }
+        }
+}
+
+
+task fullbuild (dependsOn: [prepare, lint, composer_install, phpunit, phploc, phpdox, pdepend, phpmd, phpcs, phpcpd, phpcb, phpmetrics])
+lint.mustRunAfter prepare
+composer_install.mustRunAfter lint
+phpunit.mustRunAfter composer_install
+phploc.mustRunAfter phpunit
+phpdox.mustRunAfter phploc
+pdepend.mustRunAfter phpdox
+phpmd.mustRunAfter pdepend
+phpcs.mustRunAfter phpmd
+phpcpd.mustRunAfter phpcs
+phpcb.mustRunAfter phpcpd
+phpmetrics.mustRunAfter phpcb
