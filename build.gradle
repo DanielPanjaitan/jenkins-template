@@ -20,6 +20,16 @@ task yarn(type : Exec, description : "Run Yarn package.", dependsOn: installYarn
         commandLine "sudo", "yarn"
 }
 
+task yarnLint(type : Exec, description : "Run Yarn lint."){
+        ignoreExitValue false
+        commandLine "sudo", "yarn", "run", "lint"
+}
+
+task yarnRunDev(type : Exec, description : "Run Yarn dev."){
+        ignoreExitValue false
+        ommandLine "sudo", "yarn", "run", "dev"
+}
+
 task prepare(type: Delete) {
 	delete "${homeDir}/api"
         delete "${homeDir}/code-browser"
