@@ -12,7 +12,7 @@ task addLaravelCache(type : Exec, description : "Adding Laravel cache folder."){
 }
 task installYarn(type : Exec, description : "Installing Yarn package."){
         ignoreExitValue false
-        commandLine "sudo", "npm", "install", " -g", "yarn"
+        commandLine "sudo", "npm", "install", "-g", "yarn"
 }
 
 task yarn(type : Exec, description : "Run Yarn package.", dependsOn: installYarn){
