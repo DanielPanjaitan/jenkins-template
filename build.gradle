@@ -27,7 +27,7 @@ task yarnLint(type : Exec, description : "Run Yarn lint."){
 
 task yarnRunDev(type : Exec, description : "Run Yarn dev."){
         ignoreExitValue false
-        ommandLine "sudo", "yarn", "run", "dev"
+        commandLine "sudo", "yarn", "run", "dev"
 }
 
 task prepare(type: Delete) {
