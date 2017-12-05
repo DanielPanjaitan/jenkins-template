@@ -11,14 +11,13 @@ task addLaravelCache(type : Exec, description : "Adding Laravel cache folder."){
                 args "-p", "./bootstrap/cache/"
 }
 task installYarn(type : Exec, description : "Installing Yarn package."){
-        ignoreExitValue true
-        executable 'sudo npm'
-                args "install", "-g", "yarn"
+        ignoreExitValue false
+        commandLine "sudo", "npm", "install", " -g", "yarn"
 }
 
 task yarn(type : Exec, description : "Run Yarn package.", dependsOn: installYarn){
-        ignoreExitValue true
-        executable 'sudo yarn'
+        ignoreExitValue false
+        commandLine "sudo", "yarn"
 }
 
 task prepare(type: Delete) {
